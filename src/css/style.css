@@ -1,0 +1,38 @@
+.wrap-element-extension {
+    position: fixed;
+    right: 20px;
+    width: 400px;
+    bottom: 20px;
+    z-index: 1000;
+    background: #f0f0f0;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+
+.wrap-element-extension textarea {
+    display: block;
+    z-index: 2;
+    margin: 0;
+    border: 2px solid #74637f;
+    border-radius: 0;
+    color: #444;
+    background-color: transparent;
+    width: 100%;
+    overflow: auto;
+    resize: none;
+    margin-bottom: 15px;
+    transition: transform 1s;
+}
+
+.wrap-element-extension  button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 16px;
+}
