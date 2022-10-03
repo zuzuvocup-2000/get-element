@@ -1,7 +1,4 @@
-var result = {
-    'selector' : "",
-    'target' : []
-};
+var path = [];
 
 let HtmlRender= `
     <div class="wrap-element-extension">
@@ -13,7 +10,6 @@ let HtmlRender= `
             <button class="button-Copy">Copy</button>
         </form>
         <div class="wrap-on-off-element">
-            
         </div>
     </div>
 `; 
@@ -23,15 +19,40 @@ $(document).click(function(e) {
         let target = e.target
         let tag = target.tagName.toLowerCase()
         let attributes = target.attributes;
-        tag = tag+ convert_target(e.target);
-        let allParents = GetParents(tag);
+        let nodeNames = [];
+        let selector = cssPath(target);
+
         $('.wrap-element-extension').remove()
-        let html_switch = add_switch(allParents.target);
-        $('body').append(HtmlRender).find('#copy-element').val(allParents.selector);
-        $('.wrap-on-off-element').html(html_switch);
+        $('body').append(HtmlRender).find('#copy-element').val(selector);
+        $('.wrap-on-off-element').html(add_switch(path));
         return false;
     }
 })
+
+var cssPath = function(el) {
+    path = [];
+    if (!(el instanceof Element)) 
+        return;
+    while (el.nodeType === Node.ELEMENT_NODE) {
+        var selector = el.nodeName.toLowerCase();
+        if (el.id) {
+            selector += '#' + el.id;
+            path.unshift(selector);
+            break;
+        } else {
+            var sib = el, nth = 1;
+            while (sib = sib.previousElementSibling) {
+                if (sib.nodeName.toLowerCase() == selector)
+                   nth++;
+            }
+            if (nth != 1)
+                selector += ":nth-of-type("+nth+")";
+        }
+        path.unshift(selector);
+        el = el.parentNode;
+    }
+    return path.join(" > ");
+ }
 
 $(document).on('click', '.button-Copy', function(){
     $('#copy-element').focus()
@@ -45,10 +66,9 @@ $(document).on('click', '.close-extension', function(){
 })
 
 $(document).on('change', '.checkbox-switch-element', function(){
-    let _this = $(this);
     let arr_checked = [];
     let selector = "";
-    let arr = result.target;
+    let arr = path;
 
     $('.checkbox-switch-element').each(function(){
         if($(this).is(":checked")){
@@ -58,13 +78,13 @@ $(document).on('change', '.checkbox-switch-element', function(){
 
     $.each(arr , function (index, value){
         if(in_array(index, arr_checked) < 0){
-            selector += value.toLowerCase();
+            selector += value+ " > ";
         }else{
-            selector = selector.substring(0, selector.length - 1);
+            selector = selector.substring(0, selector.length - 3);
             if(index != 0 ) selector += " ";
         }
     })
-    selector = selector.substring(0, selector.length - 1);
+    selector = selector.substring(0, selector.length - 3);
     $('body').find('#copy-element').val(selector);
 
 })
@@ -80,33 +100,12 @@ function in_array(vl, arr){
     return pos;
 }
 
-function GetParents(element) {
-    var parents = $(element).parents();
-    result = {
-        'selector' : "",
-        'target' : []
-    };
-    for (var i = parents.length-1; i >= 0; i--) {
-        let target = parents[i].tagName+convert_target(parents[i]) + ">";
-        result.selector += target;
-        result.target.push(target)
-    }
-    result.target.push(element)
-    result.selector += element;
-    result.selector = result.selector.toLowerCase();
-    return result;
-}
-
-
-function convert_target(target){
-    return (target.id ? '#'+$.trim(target.id).replace(" ", "#") : '')+(target.className ? '.'+$.trim(target.className).replace(" ", ".") : '')+(target.getAttribute('name') ? '[name="'+$.trim(target.getAttribute('name'))+'"]' : '');
-}
-
 function add_switch(data){
     let html = ``;
+    // path.join(" > ")
     $.each(data , function (index, value){  
         html+= `<div class="flex flex-space-between mb5">
-            <label for="" class="label-switch-element">`+value.replace(">", "").toLowerCase()+`</label>
+            <label for="" class="label-switch-element">`+value+`</label>
             <label class="switch-element">
                 <input type="checkbox" value="`+index+`" class="checkbox-switch-element"/>
                 <span></span>
